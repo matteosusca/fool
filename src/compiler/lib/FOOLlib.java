@@ -13,5 +13,5 @@ public class FOOLlib {
 	public static String lowerizeFirstChar(String s) {
     	return Character.toLowerCase(s.charAt(0))+s.substring(1,s.length());
     }
-    
+
 }

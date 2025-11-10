@@ -19,19 +19,19 @@ public class BaseASTVisitor<S> {
 		System.out.println(indent+extractNodeName(n.getClass().getName())+": "+s);
 	}
 
-	public S visit(Node n) {
+	public S visit(Visitable v) {
 		if (print) {
 			String temp = indent;
 			indent = (indent == null) ? "" : indent + "  ";
-			S result = visitByAcc(n);
+			S result = visitByAcc(v);
 			indent = temp;
 			return result;
 		} else 
-			return visitByAcc(n);
+			return visitByAcc(v);
 	}
 
-	S visitByAcc(Node n) { 
-		return n.accept(this);
+	S visitByAcc(Visitable v) { 
+		return v.accept(this);
 	}
 
 	public S visitNode(ProgNode n) {throw new UnimplException();}

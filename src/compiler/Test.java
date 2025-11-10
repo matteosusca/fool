@@ -1,10 +1,8 @@
 package compiler;
 
-import compiler.lib.Node;
-import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.*;
+import compiler.lib.*;
 
 public class Test {
     public static void main(String[] args) throws Exception {
@@ -26,14 +24,12 @@ public class Test {
         Node ast = visitor.visit(st);
         System.out.println("");
 
-        System.out.println("Visualizing AST.");
-        new PrintASTVisitor().visit(ast);
-
         System.out.println("Enriching AST via symbol table.");
         SymbolTableASTVisitor symtableVisitor = new SymbolTableASTVisitor(true); // use true to visualize the AST
         symtableVisitor.visit(ast);
         System.out.println("You had: "+symtableVisitor.stErrors+" symbol table errors.\n");
-
+        
         System.out.println("Visualizing Enriched AST.");
+        new PrintEASTVisitor().visit(ast);
     }
 }

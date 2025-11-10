@@ -74,7 +74,7 @@ public class AST {
 		public <S> S accept(BaseASTVisitor<S> visitor) { return visitor.visitNode(this); }
 	}
 
-	////
+////////
 	
 	public static class ProgLetInNode extends Node {
 		List<Node> declist;
@@ -122,6 +122,7 @@ public class AST {
 
 	public static class IdNode extends Node {
 		String id;
+		STentry entry;
 		IdNode(String i) {id = i;}
 
 		@Override
@@ -130,10 +131,12 @@ public class AST {
 
 	public static class CallNode extends Node {
 		String id;
-		// List<Node> arglist;
-		CallNode(String i /*, List<Node> p */) {id = i; /* arglist = p; */}
+		//List<Node> arglist;
+		STentry entry;
+		CallNode(String i /*, List<Node> p */) {id = i; /*arglist = p;*/}
 
 		@Override
 		public <S> S accept(BaseASTVisitor<S> visitor) { return visitor.visitNode(this); }
 	}
+
 }
