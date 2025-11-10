@@ -10,5 +10,3 @@ public abstract class Node {
 
 	public abstract <S> S accept(BaseASTVisitor<S> visitor);
 }
-
-	  

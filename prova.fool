@@ -9,7 +9,7 @@ let
     in if y==3 then { f() } else { false };
 in  
   print ( 
-    if g() 
+    if h()
       then { y }
       else { 10 }
   );
