@@ -1,4 +1,4 @@
-package compiler.lib;
+package compiler.exc;
 
 public class UnimplException extends RuntimeException {
 
