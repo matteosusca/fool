@@ -1,16 +1,13 @@
 let
-  var y:int = 5+2;
-  fun g:bool ()
+  var x:int = 5+3;
+  fun f:bool (n:int, m:int)
     let 
-      fun f:bool ()
-        let 
-          var x:int = -1;
-        in g();   
-    in if y==3 then { f() } else { false };
+      var x:bool = true;
+    in x==(n==m);   
 in  
   print ( 
-    if h()
-      then { y }
-      else { 10 }
-  );
-
+   if x==8
+     then { false }
+     else { 10 }
+  ) 
+;

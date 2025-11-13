@@ -22,12 +22,16 @@ public class BaseASTVisitor<S,E extends Exception> {
 	}
 
 	public S visit(Visitable v) throws E {
+		return visit(v, "");
+	}
+
+	public S visit(Visitable v, String mark) throws E {
 		if (print) {
 			String temp = indent;
 			indent = (indent == null) ? "" : indent + "  ";
+			indent += mark; //inserts mark
 			try {
-				S result = visitByAcc(v);
-				return result;
+                return visitByAcc(v);
 			} finally { indent = temp; }
 		} else 
 			return visitByAcc(v);
@@ -42,7 +46,7 @@ public class BaseASTVisitor<S,E extends Exception> {
 	public S visitNode(FunNode n) throws E {throw new UnimplException();}
 	public S visitNode(ParNode n) throws E {throw new UnimplException();}
 	public S visitNode(VarNode n) throws E {throw new UnimplException();}
-//	public S visitNode(ArrowTypeNode n) throws E {throw new UnimplException();}
+	public S visitNode(ArrowTypeNode n) throws E {throw new UnimplException();}
 	public S visitNode(BoolTypeNode n) throws E {throw new UnimplException();}
 	public S visitNode(IntTypeNode n) throws E {throw new UnimplException();}
 	public S visitNode(PrintNode n) throws E {throw new UnimplException();}
@@ -58,12 +62,7 @@ public class BaseASTVisitor<S,E extends Exception> {
 }
 
 
-//	public S visit(Visitable v) throws E {
-//		return visit(v, "");                //performs unmarked visit
-//	}
 
-//when printing marks this visit with string mark
-//indent += mark; //inserts mark
 
 //private boolean incomplExc; // enables throwing IncomplException
 

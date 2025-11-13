@@ -136,14 +136,14 @@ public class AST {
 		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
 	}
 
-//	public static class ArrowTypeNode extends TypeNode {
-//		List<TypeNode> parlist;
-//		TypeNode ret;
-//		ArrowTypeNode(List<TypeNode> p, TypeNode r) {parlist = p; ret = r;}
-//
-//		@Override
-//		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
-//	}
+	public static class ArrowTypeNode extends TypeNode {
+		List<TypeNode> parlist;
+		TypeNode ret;
+		ArrowTypeNode(List<TypeNode> p, TypeNode r) {parlist = p; ret = r;}
+
+		@Override
+		public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {return visitor.visitNode(this);}
+	}
 
 	public static class BoolTypeNode extends TypeNode {
 

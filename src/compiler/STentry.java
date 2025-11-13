@@ -4,7 +4,8 @@ import compiler.lib.*;
 
 public class STentry implements Visitable {
 	int nl;
-	public STentry(int n) { nl = n; }
+	TypeNode type;
+	public STentry(int n, TypeNode t) { nl = n; type = t; }
 	
 	@Override
 	public <S,E extends Exception> S accept(BaseASTVisitor<S,E> visitor) throws E {
