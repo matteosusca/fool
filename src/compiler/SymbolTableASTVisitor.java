@@ -12,13 +12,13 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 	int stErrors=0;
 
 	SymbolTableASTVisitor() {}
-	SymbolTableASTVisitor(boolean debug) {super(debug);} // enables print for debugging
+	SymbolTableASTVisitor(boolean debug) {super(false,debug);} // enables print for debugging
 
 	private STentry stLookup(String id) {
 		int j = nestingLevel;
 		STentry entry = null;
 		while (j >= 0 && entry == null) 
-			entry = symTable.get(j--).get(id);
+			entry = symTable.get(j--).get(id);	
 		return entry;
 	}
 
@@ -44,9 +44,9 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 	public Void visitNode(FunNode n) {
 		if(print) printNode(n);
 		Map<String, STentry> hm = symTable.get(nestingLevel);
-		List<TypeNode> parTypes = new ArrayList<>();
-		for (ParNode par : n.parlist) parTypes.add(par.type);
-		STentry entry = new STentry(nestingLevel, new ArrowTypeNode(parTypes ,n.retType));
+		List<TypeNode> parTypes = new ArrayList<>();  
+		for (ParNode par : n.parlist) parTypes.add(par.type); 
+		STentry entry = new STentry(nestingLevel, new ArrowTypeNode(parTypes,n.retType));
 		//inserimento di ID nella symtable
 		if (hm.put(n.id, entry) != null) {
 			System.out.println("Fun id " + n.id + " at line "+ n.getLine() +" already declared");
@@ -57,7 +57,7 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 		Map<String, STentry> hmn = new HashMap<>();
 		symTable.add(hmn);
 		for (ParNode par : n.parlist)
-			if (hmn.put(par.id, new STentry(nestingLevel, par.type)) != null) {
+			if (hmn.put(par.id, new STentry(nestingLevel,par.type)) != null) {
 				System.out.println("Par id " + par.id + " at line "+ n.getLine() +" already declared");
 				stErrors++;
 			}
@@ -73,7 +73,7 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 		if(print) printNode(n);
 		visit(n.exp);
 		Map<String, STentry> hm = symTable.get(nestingLevel);
-		STentry entry = new STentry(nestingLevel, n.type);
+		STentry entry = new STentry(nestingLevel,n.type);
 		//inserimento di ID nella symtable
 		if (hm.put(n.id, entry) != null) {
 			System.out.println("Var id " + n.id + " at line "+ n.getLine() +" already declared");
@@ -160,6 +160,5 @@ public class SymbolTableASTVisitor extends BaseASTVisitor<Void,VoidException> {
 		return null;
 	}
 }
-
 
 

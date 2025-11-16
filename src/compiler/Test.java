@@ -3,11 +3,12 @@ package compiler;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.*;
 import compiler.lib.*;
+import compiler.exc.*;
 
 public class Test {
     public static void main(String[] args) throws Exception {
    			
-    	String fileName = "esempio.fool";
+    	String fileName = "prova.fool";
 
     	CharStream chars = CharStreams.fromFileName(fileName);
     	FOOLLexer lexer = new FOOLLexer(chars);
@@ -33,26 +34,28 @@ public class Test {
     	new PrintEASTVisitor().visit(ast);
     	System.out.println("");
 
-//    	System.out.println("Checking Types.");
-//    	TypeCheckEASTVisitor typeCheckVisitor = new TypeCheckEASTVisitor();
-//    	TypeNode mainType = typeCheckVisitor.visit(ast);
-//    	System.out.print("Type of main program expression is: ");
-//    	new PrintEASTVisitor().visit(mainType);
-//    	System.out.println("You had "+FOOLlib.typeErrors+" type checking errors.\n");
-//
-//    	int frontEndErrors = lexer.lexicalErrors+parser.getNumberOfSyntaxErrors()+symtableVisitor.stErrors+FOOLlib.typeErrors;
-//    	System.out.println("You had a total of "+frontEndErrors+" front-end errors.\n");
+    	System.out.println("Checking Types.");
+    	try {
+        	TypeCheckEASTVisitor typeCheckVisitor = new TypeCheckEASTVisitor(true);
+        	TypeNode mainType = typeCheckVisitor.visit(ast);
+    		System.out.print("Type of main program expression is: ");
+    		new PrintEASTVisitor().visit(mainType);
+        } catch (TypeException e) {
+    		System.out.println("Type checking error in main program expression: "+e.text);  
+        } catch (IncomplException e) {    		
+    		System.out.println("Could not determine main program expression type due to errors detected before type checking.");
+    	} 
+    	System.out.println("You had "+FOOLlib.typeErrors+" type checking errors.\n");
+
+    	int frontEndErrors = lexer.lexicalErrors+parser.getNumberOfSyntaxErrors()+symtableVisitor.stErrors+FOOLlib.typeErrors;
+    	System.out.println("You had a total of "+frontEndErrors+" front-end errors.\n");
 
     }
 }
 
 
-//    	} catch (TypeException e) {
-//    		System.out.println("Type checking error in main program expression: "+e.text);     		
     		
     		
-//    	} catch (IncomplException e) {    		
-//    		System.out.println("Could not determine main program expression type due to errors detected before type checking.");
 
     		    	
 

@@ -7,11 +7,13 @@ import static compiler.lib.FOOLlib.*;
 
 public class BaseASTVisitor<S,E extends Exception> {
 
-	protected boolean print; // enables printing
+	private boolean incomplExc=false; // enables throwing IncomplException
+	protected boolean print=false; // enables printing
 	protected String indent;
 
 	protected BaseASTVisitor() {}
-	protected BaseASTVisitor(boolean p) { print = p; }
+	protected BaseASTVisitor(boolean ie) { incomplExc = ie; }
+	protected BaseASTVisitor(boolean ie, boolean p) { incomplExc = ie; print = p; }
 
 	protected void printNode(Node n) {
 		System.out.println(indent+extractNodeName(n.getClass().getName()));
@@ -20,18 +22,22 @@ public class BaseASTVisitor<S,E extends Exception> {
 	protected void printNode(Node n, String s) {
 		System.out.println(indent+extractNodeName(n.getClass().getName())+": "+s);
 	}
-
+	
 	public S visit(Visitable v) throws E {
-		return visit(v, "");
+		return visit(v, "");                //performs unmarked visit
 	}
 
-	public S visit(Visitable v, String mark) throws E {
+	public S visit(Visitable v, String mark) throws E { //when printing marks this visit with string mark
+		if (v==null) 
+			if (incomplExc) throw new IncomplException();
+			else return null;
 		if (print) {
 			String temp = indent;
 			indent = (indent == null) ? "" : indent + "  ";
 			indent += mark; //inserts mark
 			try {
-                return visitByAcc(v);
+				S result = visitByAcc(v);
+				return result;
 			} finally { indent = temp; }
 		} else 
 			return visitByAcc(v);
@@ -64,13 +70,8 @@ public class BaseASTVisitor<S,E extends Exception> {
 
 
 
-//private boolean incomplExc; // enables throwing IncomplException
 
-//protected BaseASTVisitor(boolean ie) { incomplExc = ie; }
 
-//if (v==null) 
-//if (incomplExc) throw new IncomplException();
-//else return null;
 
 
 
