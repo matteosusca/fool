@@ -106,9 +106,24 @@ public class TypeCheckEASTVisitor extends BaseEASTVisitor<TypeNode,TypeException
 
 	@Override
 	public TypeNode visitNode(CallNode n) throws TypeException {
-		if (print) printNode(n,n.id);
-		for (Node arg : n.arglist) visit(arg);
-		return null;
+		if (print) printNode(n, n.id);
+		TypeNode entryType = visit(n.entry);
+		if (!(entryType instanceof ArrowTypeNode arrow))
+			throw new TypeException("Wrong usage of non-function identifier " + n.id, n.getLine());
+		if (arrow.parlist.size() != n.arglist.size())
+			throw new TypeException("Function " + n.id + " expects "
+					+ arrow.parlist.size() + " arguments, found " + n.arglist.size(), n.getLine());
+		for (int i = 0; i < n.arglist.size(); i++) {
+			try {
+				if (!isSubtype(visit(n.arglist.get(i)), arrow.parlist.get(i))) {
+					throw new TypeException("Incompatible type for argument "
+							+ (i + 1) + " in call to function " + n.id, n.getLine());
+				}
+			} catch (TypeException e) {
+				System.out.println(e.text);
+			}
+		}
+		return arrow.ret;
 	}
 
 	@Override
@@ -163,16 +178,3 @@ public class TypeCheckEASTVisitor extends BaseEASTVisitor<TypeNode,TypeException
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

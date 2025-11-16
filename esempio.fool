@@ -3,11 +3,13 @@ let
   fun f:bool (n:int, m:int)
     let 
       var x:bool = true;
-    in x==(n==m);   
+    in x==(n==m);
+  fun g:int (b:bool, b2:bool, b3:bool)
+    if (b)
+      then {1}
+      else {0};
 in  
   print ( 
-   if f(x,8) 
-     then { false }
-     else { 10 }
-  ) 
+   g(2, true)
+  )
 ;

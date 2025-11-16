@@ -1,0 +1,267 @@
+-----------------------------------------------------------------------------
+CORREZIONE ESERCIZIO PER CASA:
+COMPLETARE GENERAZIONE DELL'EAST TRAMITE SYMBOL TABLE PER GRAMMATICA FOOL.g4
+-----------------------------------------------------------------------------
+
+Completare la generazione dell'enriched abstract syntax tree (EAST) per la 
+grammatica in FOOL.g4 (che include anche parametri in dichiarazione funzioni e 
+argomenti in chiamata funzioni) facendo ciò che segue:
+
+1) Modificare AST.Java come segue
+- aggiungere campo parlist a FunNode (e aggiornare costruttore)
+- aggiungere campo arglist a CallNode (e aggiornare costruttore)
+- aggiungere classe ParNode (con campo id e type)
+CONSEGNA: AST.java 
+
+2) Modificare ASTGenerationSTVisitor.java come segue:
+- metodo Node visitFundec(FundecContext c) 
+All'inizio del metodo (dopo la stampa) bisogna creare (e memorizzare nella 
+variabile parList) un ArrayList di ParNode aventi, come id, la stringa
+c.ID(i).getText() e, come tipo, il nodo ottenuto visitando c.type(i) ; per 
+indice i compreso tra 1 e c.ID().size()-1 . Per ogni ParNode creato settare, 
+inoltre, il numero di linea a c.ID(i).getSymbol().getLine() . 
+Aggiungere parList alle informazioni passate al costruttore di FunNode.
+- metodo Node visitCall(CallContext c)
+All'inizio del metodo (dopo la stampa) bisogna creare (e memorizzare nella 
+variabile argList) un ArrayList contenente i nodi generati visitando le 
+espressioni in c.exp() . 
+Aggiungere argList alle informazioni passate al costruttore di CallNode.
+CONSEGNA: ASTGenerationSTVisitor.java
+
+3) Modificare SymbolTableASTVisitor.java come segue:
+- metodo visitNode(FunNode n)
+Aggiungere l'inserimento delle dichiarazioni dei parametri (nodi ParNode dentro 
+n.parlist) nella symbol table: fare l'inserimento direttamente, **senza visitare 
+i parametri**. Se l'id del parametro è già presente nello scope segnalare errore:
+"Par id .... at line .... already declared"
+ed incrementare il campo stErrors
+- metodo visitNode(IdNode n) {
+Modificare la stampa di errore in:
+"Var or Par id .... at line .... not declared"
+- metodo visitNode(CallNode n)
+Aggiungere la visita degli argomenti della chiamata di funzione (in n.arglist).
+CONSEGNA: SymbolTableASTVisitor.java
+
+4) Modificare PrintEASTVisitor.java come segue:
+- aggiungere un metodo visitNode(ParNode n) che, dopo aver stampato il nome del 
+nodo e il campo "id", invochi la visita sul campo "type".
+- decommentare la invocazione della visita sui parametri in visitNode(FunNode n) 
+e sugli argomenti in visitNode(CallNode n) 
+CONSEGNA: PrintEASTVisitor.java
+
+5) Testare il codice creato con l'esempio in "esempio.fool". L'output deve
+essere il seguente:
+
+Visualizing Enriched AST...
+ProgLetIn
+  Var: y
+    IntType
+    Plus
+      Int: 5
+      Int: 2
+  Fun: g
+    BoolType
+    Par: b
+      BoolType
+    Fun: f
+      BoolType
+      Par: n
+        IntType
+      Par: m
+        IntType
+      Var: x
+        IntType
+        Id: m
+          STentry: nestlev 2
+      Call: g
+        STentry: nestlev 0
+        Equal
+          Int: 3
+          Int: 5
+    If
+      Id: b
+        STentry: nestlev 1
+      Call: f
+        STentry: nestlev 1
+        Int: 2
+        Int: 3
+      Bool: false
+  Print
+    If
+      Call: g
+        STentry: nestlev 0
+        Bool: true
+      Id: y
+        STentry: nestlev 0
+      Int: 10
+
+-----------------------------------------------------------------------------
+REALIZZAZIONE DI (ENRICHED) AST VISITOR CHE GENERANO ECCEZIONI
+-----------------------------------------------------------------------------
+
+In certi casi, per gestire errori rilevati durante una visita, è necessario 
+interrompere la visita lanciando una eccezione (es. perche' è impossibile 
+determinare un valore di ritorno consistente per visitNode in caso di errore).
+Ciò sarà necessario per il TypeCheckEASTVisitor che realizzeremo oggi.
+
+Partiamo da un progetto FOOL avente come sorgenti (nella directory "compiler") 
+i files iniziali forniti nella directory compiler. Rispetto alla versione del 
+compilatore che abbiamo sviluppato all'ultimo laboratorio (estesa dall'esercizio 
+per oggi) sono state apportate le seguenti modifiche.
+
+Riguardo la gestione delle eccezioni, è stato aggiunto un nuovo package 
+"compiler.exc" per le eccezioni, ed è stata realizzata la gestione di visitor 
+che possono gettare eccezioni come segue.
+- BaseASTVisitor: 
+aggiunto parametro E extends Exception,
+aggiunto throws E in TUTTE le visit/visitNode e 
+aggiunta try-finally in visit che fa indentazione, per ripristinarla comunque
+- BaseEASTVisitor: aggiunto parametro E (e passato) e throws E in visitSTentry
+- Visitable: ad accept aggiunto binder E, throws E, e parametro E in argomento
+- AST: stessa modifica nell'implementazione di accept di tutte le classi
+- STentry: stessa modifica più uso parametro E anche nel cast
+- PrintEASTVisitor: uso VoidException (unchecked) come parametro in ereditata 
+(mi consente di chiamare visit senza fare ne' try-catch ne' dich. throws; si
+noti che posso sempre overridare un metodo che dichiara throws senza throws)
+- SymbolTableASTVisitor: stessa cosa
+
+Le altre modifiche effettuate sono le suguenti.
+- classi in AST e metodi di visita riordinati (radici in alto foglie in basso)
+- è stata introdotta la classe abstract TypeNode extends Node per i tipi:
+TypeNode è ora classe genitore di IntTypeNode e BoolTypeNode, e 
+i campi type di ParNode/VarNode e retType di FunNode sono ora dei TypeNode
+(in ASTGenerationSTVisitor sono stati introdotti cast a TypeNode dopo visite)
+
+-----------------------------------------------------------------------------
+ESTENSIONE INFORMAZIONE CONTENUTA IN STentry: TIPI DEGLI IDENTIFICATORI
+-----------------------------------------------------------------------------
+
+Estendiamo le informazioni, prese dalla dichiarazione degli identificatori, 
+contenute nelle symbol table entry (classe STentry) introducendo il tipo:
+- un tipo BoolTypeNode oppure IntTypeNode per le variabili o per i parametri
+- un tipo funzionale ArrowTypeNode (extends TypeNode) per le funzioni
+
+ArrowTypeNode (classe commentata in fondo a AST.java) contiene le informazioni 
+corrispondenti alla notazione per i tipi funzionali vista a lezione:
+(T1,T2,...,Tn)->T 
+Cioè il tipo T1,T2,...,Tn dei parametri (nel campo parlist) ed il tipo T di 
+ritorno della funzione (nel campo ret).
+
+1) Modifichiamo la classe SymbolTableASTVisitor aggiungendo la costruzione e 
+l'inserimento del tipo nelle STentry (campo type).
+
+2) Modifichiamo la classe PrintEASTVisitor aggiungendo:
+- nella visita delle STentry, la stampa del tipo tramite visita del nodo 
+contenuto nel campo type
+- la visita di ArrowTypeNode (da decommentare): richiede una stampa speciale 
+"marcata" per il tipo di ritorno (oltre ad essere indentato, viene preceduto 
+da "->"), realizzata aggiungendo un parametro a metodo visit di BaseASTVisitor
+
+3) Testiamo il SymbolTableASTVisitor e il PrintEASTVisitor con il codice di 
+esempio in "esempio.fool"
+
+-----------------------------------------------------------------------------
+TYPE CHECKING TRAMITE VISITA DELL'ENRICHED ABSTRACT SYNTAX TREE
+-----------------------------------------------------------------------------
+
+Realizziamo la seconda fase della semantic analysis vista a lezione: il type 
+checking, che viene effettuato tramite visita dell'enriched abstract syntax 
+tree determinando i tipi delle espressioni (TypeNode) in modo bottom-up.
+
+1) Costruiamo una classe TypeCheckEASTVisitor (di cui viene dato un file 
+iniziale) che realizzi il type checking dei programmi FOOL la cui sintassi è 
+quella di FOOL.g4, a parte la chiamata di funzioni (nodo CallNode)
+- la relazione di subtyping è definita tramite il metodo isSubtype di FOOLlib
+- consideriamo i booleani essere sottotipo degli interi con l'interpretazione:
+  true vale 1 e false vale 0
+In caso il visitor rilevi un errore di tipo deve lanciare una eccezione 
+TypeException contenente il messaggio di errore ed il numero di linea: ciò 
+automaticamente incrementa il contatore "typeErrors" della classe FOOLlib.
+
+2) Testiamo il TypeCheckEASTVisitor con il seguente codice FOOL (in "prova.fool"), 
+facendo piccole modifiche per mostrare gli errori (decommentiamo le righe in 
+fondo a Test.java).
+let
+  var x:int = 5+3;
+  fun f:bool (n:int, m:int)
+    let 
+      var x:bool = true;
+    in x==(n==m);   
+in  
+  print ( 
+    if x==8 
+      then { false }
+      else { 10 }
+  );
+
+3) Per poter rilevare multipli errori di tipo introduciamo la cattura di 
+TypeException durante la visita, in caso di type checking di dichiarazioni.
+La visita di dichiarazioni non torna un oggetto TypeNode (semplicemente torna 
+null) che serva al chiamante: possiamo quindi accettare a questo livello un 
+errore di tipo avvenuto dentro la dichiarazione senza propagare l'eccezione.
+- introduciamo la cattura e stampa di eccezioni quando si visitano dichiarazioni
+- facciamo lo stesso in Test per le eccezioni nella main program expression
+ 
+-----------------------------------------------------------------------------
+GESTIONE ERRORI PRECEDENTI A TYPE CHECKING: ST ED (ENRICHED) AST INCOMPLETI
+-----------------------------------------------------------------------------
+
+Il compilatore deve completare tutte le fasi del front-end anche in presenza di 
+errori collezionando più errori possibili (anche relativi alle fasi precedenti 
+al type checking) in modo che il programmatore possa correggerli insieme.
+
+Il problema però è che:
+- errori lessicali/sintattici possono portare a creazione da parte di ANTLR4 di 
+Syntax Tree incompleti (in cui le variabili figlie di un nodo sono "null")
+- tali errori (per un effetto a catena) ed errori semantici rilevati via symbol 
+table possono portare alla creazione di EAST che contengono anch'essi figli null
+Ciò tipicamente genera null pointer exceptions durante l'esecuzione e impedisce 
+che si continui a collezionare errori per le "parti buone" del programma.
+
+1) Gestiamo i Syntax Tree incompleti tornando null quando si effettua una 
+qualsiasi visit con argomento null nell'ASTGenerationSTVisitor
+(questo risolve il problema ma causa la generazione di AST incompleti)
+
+La gestione degli (Enriched) AST incompleti dipende dallo specifico visitor:
+- per alcuni visitor è sufficiente lo stesso approccio usato per i Syntax Tree
+(es. SymbolTableASTVisitor e PrintEASTVisitor)
+- per altri visitor è necessario gettare un'eccezione unchecked IncomplException
+(es. TypeCheckEASTVisitor)
+
+2) Gestiamo i due casi sopra introducendo un parametro booleano "incomplExc" 
+aggiuntivo al BaseASTVisitor e al BaseEASTVisitor che indichi se si vuole che 
+venga, o meno, gettata una IncomplException in caso di albero incompleto.
+- in BaseASTVisitor, quando si effettua una qualsiasi visit con argomento null, 
+torniamo null o lanciamo l'eccezione sulla base di tale paramentro
+- settiamo appropriatamente tale nuovo parametro in ciascun visitor e in 
+TypeCheckEASTVisitor aggiungiamo la cattura di IncomplException quando si 
+visitano dichiarazioni e in Test.java
+(possiamo ora togliere il controllo di STentry a null nel PrintEASTVisitor)
+
+Si noti che la visita dei TypeNode (che ritorna null) è importante, non solo
+per stamparli in caso di debug, ma anche per controllare che non siano incompleti 
+prima di utilizzarli!
+
+-----------------------------------------------------------------------------
+ESERCIZIO PER CASA:
+COMPLETARE TYPE CHECKING TRAMITE VISITA DELL'ENRICHED AST PER FOOL.g4
+-----------------------------------------------------------------------------
+
+Completare la realizzazione del type checking dei programmi FOOL la cui sintassi 
+è in FOOL.g4, includendo anche la chiamata di funzioni (nodo CallNode).
+
+1) Modificare TypeCheckEASTVisitor.java realizzando il codice per la visita di 
+CallNode che implementi la regola di type checking per le chiamate di funzioni
+(con subtyping) vista a lezione. 
+In particolare il codice deve seguire i seguenti passi:
+- recupero tipo (che mi aspetto essere ArrowTypeNode) da STentry
+- errori possibili (che indicano, in ordine, i controlli da fare):
+     Invocation of a non-function [id del CallNode]
+     Wrong number of parameters in the invocation of [id del CallNode]
+     Wrong type for ...-th parameter in the invocation of [id del CallNode]
+- dopo i check restituisco il tipo di ritorno della funzione
+CONSEGNA: TypeCheckEASTVisitor.java
+
+2) Testare il codice creato con l'esempio in "esempio.fool" e provare a fare piccole 
+modifiche per mostrare gli errori ("esempio.fool" non deve dare errori e l'output deve 
+indicare che la main program expression è IntType).
